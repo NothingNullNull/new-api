@@ -102,6 +102,11 @@ func LDAPLogin(c *gin.Context) {
 		return
 	}
 
+	// Strip email domain from username if present
+	if strings.Contains(username, "@") {
+		username = strings.Split(username, "@")[0]
+	}
+
 	// Authenticate against LDAP
 	authenticated, err := service.LDAPAuth(username, password)
 	if err != nil {
@@ -120,12 +125,7 @@ func LDAPLogin(c *gin.Context) {
 	user := model.User{Username: username}
 	err = user.FillUserByUsername()
 	if err != nil {
-		// User doesn't exist, create if registration is enabled
-		if !common.RegisterEnabled {
-			common.ApiErrorI18n(c, i18n.MsgUserRegisterDisabled)
-			return
-		}
-		
+		// User doesn't exist, create new user (LDAP users bypass registration check)
 		user.Username = username
 		user.DisplayName = username
 		user.Role = common.RoleCommonUser
