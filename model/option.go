@@ -98,6 +98,12 @@ func InitOptionMap() {
 	common.OptionMap["GitHubClientSecret"] = ""
 	common.OptionMap["TelegramBotToken"] = ""
 	common.OptionMap["TelegramBotName"] = ""
+	common.OptionMap["LDAPEnabled"] = strconv.FormatBool(common.LDAPEnabled)
+	common.OptionMap["LDAPServerURL"] = ""
+	common.OptionMap["LDAPBindDN"] = ""
+	common.OptionMap["LDAPBindPassword"] = ""
+	common.OptionMap["LDAPBaseDN"] = ""
+	common.OptionMap["LDAPUserFilter"] = common.LDAPUserFilter
 	common.OptionMap["WeChatServerAddress"] = ""
 	common.OptionMap["WeChatServerToken"] = ""
 	common.OptionMap["WeChatAccountQRCodeImageURL"] = ""
@@ -386,6 +392,18 @@ func updateOptionMap(key string, value string) (err error) {
 		common.TelegramBotToken = value
 	case "TelegramBotName":
 		common.TelegramBotName = value
+	case "LDAPEnabled":
+		common.LDAPEnabled = value == "true"
+	case "LDAPServerURL":
+		common.LDAPServerURL = value
+	case "LDAPBindDN":
+		common.LDAPBindDN = value
+	case "LDAPBindPassword":
+		common.LDAPBindPassword = value
+	case "LDAPBaseDN":
+		common.LDAPBaseDN = value
+	case "LDAPUserFilter":
+		common.LDAPUserFilter = value
 	case "TurnstileSiteKey":
 		common.TurnstileSiteKey = value
 	case "TurnstileSecretKey":

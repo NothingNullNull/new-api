@@ -95,6 +95,12 @@ const SystemSetting = () => {
     TelegramOAuthEnabled: '',
     TelegramBotToken: '',
     TelegramBotName: '',
+    LDAPEnabled: '',
+    LDAPServerURL: '',
+    LDAPBindDN: '',
+    LDAPBindPassword: '',
+    LDAPBaseDN: '',
+    LDAPUserFilter: '',
     LinuxDOOAuthEnabled: '',
     LinuxDOClientId: '',
     LinuxDOClientSecret: '',
@@ -177,6 +183,7 @@ const SystemSetting = () => {
           case 'GitHubOAuthEnabled':
           case 'WeChatAuthEnabled':
           case 'TelegramOAuthEnabled':
+          case 'LDAPEnabled':
           case 'RegisterEnabled':
           case 'TurnstileCheckEnabled':
           case 'EmailDomainRestrictionEnabled':
@@ -583,6 +590,21 @@ const SystemSetting = () => {
       { key: 'TelegramBotToken', value: inputs.TelegramBotToken },
       { key: 'TelegramBotName', value: inputs.TelegramBotName },
     ];
+    await updateOptions(options);
+  };
+
+  const submitLDAPSettings = async () => {
+    const options = [
+      { key: 'LDAPServerURL', value: inputs.LDAPServerURL },
+      { key: 'LDAPBindDN', value: inputs.LDAPBindDN },
+      { key: 'LDAPBaseDN', value: inputs.LDAPBaseDN },
+      { key: 'LDAPUserFilter', value: inputs.LDAPUserFilter },
+    ];
+    
+    if (inputs.LDAPBindPassword !== '') {
+      options.push({ key: 'LDAPBindPassword', value: inputs.LDAPBindPassword });
+    }
+    
     await updateOptions(options);
   };
 
@@ -1079,6 +1101,15 @@ const SystemSetting = () => {
                         }
                       >
                         {t('允许通过 Telegram 进行登录')}
+                      </Form.Checkbox>
+                      <Form.Checkbox
+                        field='LDAPEnabled'
+                        noLabel
+                        onChange={(e) =>
+                          handleCheckboxChange('LDAPEnabled', e)
+                        }
+                      >
+                        {t('允许通过 LDAP 进行登录')}
                       </Form.Checkbox>
                       <Form.Checkbox
                         field="['oidc.enabled']"
@@ -1593,6 +1624,63 @@ const SystemSetting = () => {
                   </Row>
                   <Button onClick={submitTelegramSettings}>
                     {t('保存 Telegram 登录设置')}
+                  </Button>
+                </Form.Section>
+              </Card>
+
+              <Card>
+                <Form.Section text={t('配置 LDAP 登录')}>
+                  <Text>{t('用以支持通过 LDAP 进行登录认证')}</Text>
+                  <Row
+                    gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+                  >
+                    <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                      <Form.Input
+                        field='LDAPServerURL'
+                        label={t('LDAP 服务器地址')}
+                        placeholder='ldap://localhost:389 或 ldaps://localhost:636'
+                      />
+                    </Col>
+                    <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                      <Form.Input
+                        field='LDAPBaseDN'
+                        label={t('LDAP Base DN')}
+                        placeholder='dc=example,dc=com'
+                      />
+                    </Col>
+                  </Row>
+                  <Row
+                    gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+                  >
+                    <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                      <Form.Input
+                        field='LDAPBindDN'
+                        label={t('LDAP Bind DN (可选)')}
+                        placeholder='cn=admin,dc=example,dc=com'
+                      />
+                    </Col>
+                    <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                      <Form.Input
+                        field='LDAPBindPassword'
+                        label={t('LDAP Bind 密码 (可选)')}
+                        type='password'
+                        placeholder={t('敏感信息不会发送到前端显示')}
+                      />
+                    </Col>
+                  </Row>
+                  <Row
+                    gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+                  >
+                    <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                      <Form.Input
+                        field='LDAPUserFilter'
+                        label={t('LDAP 用户过滤器')}
+                        placeholder='(uid=%s)'
+                      />
+                    </Col>
+                  </Row>
+                  <Button onClick={submitLDAPSettings}>
+                    {t('保存 LDAP 登录设置')}
                   </Button>
                 </Form.Section>
               </Card>
