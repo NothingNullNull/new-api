@@ -111,6 +111,7 @@ const LoginForm = () => {
   const githubTimeoutRef = useRef(null);
   const githubButtonText = t(githubButtonTextKeyByState[githubButtonState]);
   const [customOAuthLoading, setCustomOAuthLoading] = useState({});
+  const [loginMode, setLoginMode] = useState('password'); // 'password' or 'ldap'
 
   const logo = getLogo();
   const systemName = getSystemName();
@@ -443,7 +444,14 @@ const LoginForm = () => {
   const handleEmailLoginClick = () => {
     setEmailLoginLoading(true);
     setShowEmailLogin(true);
+    setLoginMode('password'); // Set to password mode
     setEmailLoginLoading(false);
+  };
+
+  // LDAP登录选项点击处理
+  const handleLDAPLoginClick = () => {
+    setShowEmailLogin(true);
+    setLoginMode('ldap'); // Set to LDAP mode
   };
 
   const handlePasskeyLogin = async () => {
@@ -661,8 +669,7 @@ const LoginForm = () => {
                     className='w-full h-12 flex items-center justify-center !rounded-full border border-gray-200 hover:bg-gray-50 transition-colors'
                     type='tertiary'
                     icon={<IconLock size='large' />}
-                    onClick={handleLDAPSubmit}
-                    loading={loginLoading}
+                    onClick={handleLDAPLoginClick}
                   >
                     <span className='ml-3'>{t('使用 LDAP 登录')}</span>
                   </Button>
@@ -776,7 +783,7 @@ const LoginForm = () => {
           <Card className='border-0 !rounded-2xl overflow-hidden'>
             <div className='flex justify-center pt-6 pb-2'>
               <Title heading={3} className='text-gray-800 dark:text-gray-200'>
-                {t('登 录')}
+                {loginMode === 'ldap' ? t('LDAP 登录') : t('登 录')}
               </Title>
             </div>
             <div className='px-2 py-8'>
@@ -856,13 +863,13 @@ const LoginForm = () => {
                     className='w-full !rounded-full'
                     type='primary'
                     htmlType='submit'
-                    onClick={handleSubmit}
+                    onClick={loginMode === 'ldap' ? handleLDAPSubmit : handleSubmit}
                     loading={loginLoading}
                     disabled={
                       (hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms
                     }
                   >
-                    {t('继续')}
+                    {loginMode === 'ldap' ? t('LDAP 登录') : t('继续')}
                   </Button>
 
                   <Button
