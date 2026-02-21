@@ -448,7 +448,7 @@ const LoginForm = () => {
     setEmailLoginLoading(false);
   };
 
-  // LDAP登录选项点击处理
+  // Handle LDAP login option click - show email form in LDAP mode
   const handleLDAPLoginClick = () => {
     setShowEmailLogin(true);
     setLoginMode('ldap'); // Set to LDAP mode
