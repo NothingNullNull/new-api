@@ -471,8 +471,8 @@ const TopUp = () => {
             setPresetAmounts(generatePresetAmounts(minTopUpValue));
           }
 
-          // 初始化显示实付金额
-          getAmount(minTopUpValue);
+          // 初始化显示实付金额 - use silent mode to avoid showing error on page load
+          getAmount(minTopUpValue, true);
         } catch (e) {
           console.log('解析支付方式失败:', e);
           setPayMethods([]);
@@ -566,7 +566,7 @@ const TopUp = () => {
     return amount + ' ' + t('元');
   };
 
-  const getAmount = async (value) => {
+  const getAmount = async (value, silent = false) => {
     if (value === undefined) {
       value = topUpCount;
     }
@@ -581,10 +581,15 @@ const TopUp = () => {
           setAmount(parseFloat(data));
         } else {
           setAmount(0);
-          Toast.error({ content: '错误：' + data, id: 'getAmount' });
+          // Don't show error toast during initialization
+          if (!silent) {
+            Toast.error({ content: '错误：' + data, id: 'getAmount' });
+          }
         }
       } else {
-        showError(res);
+        if (!silent) {
+          showError(res);
+        }
       }
     } catch (err) {
       console.log(err);
@@ -592,7 +597,7 @@ const TopUp = () => {
     setAmountLoading(false);
   };
 
-  const getStripeAmount = async (value) => {
+  const getStripeAmount = async (value, silent = false) => {
     if (value === undefined) {
       value = topUpCount;
     }
@@ -607,10 +612,15 @@ const TopUp = () => {
           setAmount(parseFloat(data));
         } else {
           setAmount(0);
-          Toast.error({ content: '错误：' + data, id: 'getAmount' });
+          // Don't show error toast during initialization
+          if (!silent) {
+            Toast.error({ content: '错误：' + data, id: 'getAmount' });
+          }
         }
       } else {
-        showError(res);
+        if (!silent) {
+          showError(res);
+        }
       }
     } catch (err) {
       console.log(err);
