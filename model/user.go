@@ -430,7 +430,13 @@ func (user *User) Insert(inviterId int) error {
 	// 自动激活订阅（如果配置了）
 	if common.AutoActivateSubscriptionPlanId > 0 {
 		plan, err := GetSubscriptionPlanById(common.AutoActivateSubscriptionPlanId)
-		if err == nil && plan != nil && plan.Enabled {
+		if err != nil {
+			common.SysLog(fmt.Sprintf("为新用户 %s 自动激活订阅失败，无法获取订阅套餐 ID %d: %s", user.Username, common.AutoActivateSubscriptionPlanId, err.Error()))
+		} else if plan == nil {
+			common.SysLog(fmt.Sprintf("为新用户 %s 自动激活订阅失败，订阅套餐 ID %d 不存在", user.Username, common.AutoActivateSubscriptionPlanId))
+		} else if !plan.Enabled {
+			common.SysLog(fmt.Sprintf("为新用户 %s 自动激活订阅失败，订阅套餐 ID %d 未启用", user.Username, common.AutoActivateSubscriptionPlanId))
+		} else {
 			err = DB.Transaction(func(tx *gorm.DB) error {
 				_, err := CreateUserSubscriptionFromPlanTx(tx, user.Id, plan, "auto_register")
 				return err

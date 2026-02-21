@@ -96,9 +96,12 @@ export default function SettingsCreditLimit(props) {
         const res = await API.get('/api/subscription/admin/plans');
         if (res.success) {
           setSubscriptionPlans(res.data || []);
+        } else {
+          showError(t('获取订阅套餐列表失败'));
         }
       } catch (error) {
         console.error('Failed to fetch subscription plans:', error);
+        showError(t('获取订阅套餐列表失败，请刷新页面重试'));
       }
     };
     fetchSubscriptionPlans();

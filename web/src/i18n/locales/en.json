@@ -1234,6 +1234,8 @@
     "新用户注册后将自动激活所选订阅套餐": "The selected subscription plan will be automatically activated for new users upon registration",
     "不自动激活": "No auto-activation",
     "无描述": "No description",
+    "获取订阅套餐列表失败": "Failed to fetch subscription plans",
+    "获取订阅套餐列表失败，请刷新页面重试": "Failed to fetch subscription plans, please refresh and try again",
     "新用户初始额度": "Initial quota for new users",
     "新的备用恢复代码": "New backup recovery code",
     "新的备用码已生成": "New backup code has been generated",
