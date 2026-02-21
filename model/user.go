@@ -426,6 +426,27 @@ func (user *User) Insert(inviterId int) error {
 			_ = inviteUser(inviterId)
 		}
 	}
+	
+	// 自动激活订阅（如果配置了）
+	if common.AutoActivateSubscriptionPlanId > 0 {
+		plan, err := GetSubscriptionPlanById(common.AutoActivateSubscriptionPlanId)
+		if err == nil && plan != nil && plan.Enabled {
+			err = DB.Transaction(func(tx *gorm.DB) error {
+				_, err := CreateUserSubscriptionFromPlanTx(tx, user.Id, plan, "auto_register")
+				return err
+			})
+			if err != nil {
+				common.SysLog(fmt.Sprintf("为新用户 %s 自动激活订阅失败: %s", user.Username, err.Error()))
+			} else {
+				RecordLog(user.Id, LogTypeSystem, fmt.Sprintf("自动激活订阅: %s", plan.Title))
+				// 如果订阅包含分组升级，更新缓存
+				if plan.UpgradeGroup != "" {
+					_ = UpdateUserGroupCache(user.Id, plan.UpgradeGroup)
+				}
+			}
+		}
+	}
+	
 	return nil
 }
 
