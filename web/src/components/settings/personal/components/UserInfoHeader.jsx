@@ -121,7 +121,7 @@ const UserInfoHeader = ({ t, userState }) => {
         {/* 当前余额显示 */}
         <Badge count={t('当前余额')} position='rightTop' type='danger'>
           <div className='text-2xl sm:text-3xl md:text-4xl font-bold tracking-wide'>
-            {renderQuota(userState?.user?.quota)}
+            {renderQuota((userState?.user?.quota || 0) + (userState?.user?.subscription_quota || 0))}
           </div>
         </Badge>
 
