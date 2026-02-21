@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Col, Form, Row, Spin } from '@douyinfe/semi-ui';
+import { Button, Col, Form, Row, Spin, Select } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import {
   compareObjects,
@@ -36,10 +36,12 @@ export default function SettingsCreditLimit(props) {
     PreConsumedQuota: '',
     QuotaForInviter: '',
     QuotaForInvitee: '',
+    AutoActivateSubscriptionPlanId: '0',
     'quota_setting.enable_free_model_pre_consume': true,
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
 
   function onSubmit() {
     const updateArray = compareObjects(inputs, inputsRow);
@@ -87,6 +89,20 @@ export default function SettingsCreditLimit(props) {
     setInputsRow(structuredClone(currentInputs));
     refForm.current.setValues(currentInputs);
   }, [props.options]);
+
+  useEffect(() => {
+    const fetchSubscriptionPlans = async () => {
+      try {
+        const res = await API.get('/api/subscription/admin/plans');
+        if (res.success) {
+          setSubscriptionPlans(res.data || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch subscription plans:', error);
+      }
+    };
+    fetchSubscriptionPlans();
+  }, []);
   return (
     <>
       <Spin spinning={loading}>
@@ -165,6 +181,30 @@ export default function SettingsCreditLimit(props) {
                     })
                   }
                 />
+              </Col>
+            </Row>
+            <Row>
+              <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+                <Form.Select
+                  label={t('新用户自动激活订阅')}
+                  field={'AutoActivateSubscriptionPlanId'}
+                  placeholder={t('选择订阅套餐（留空则不自动激活）')}
+                  extraText={t('新用户注册后将自动激活所选订阅套餐')}
+                  onChange={(value) =>
+                    setInputs({
+                      ...inputs,
+                      AutoActivateSubscriptionPlanId: String(value),
+                    })
+                  }
+                  style={{ width: '100%' }}
+                >
+                  <Select.Option value="0">{t('不自动激活')}</Select.Option>
+                  {subscriptionPlans.map((item) => (
+                    <Select.Option key={item.plan.id} value={String(item.plan.id)}>
+                      {item.plan.title} - {item.plan.subtitle || t('无描述')}
+                    </Select.Option>
+                  ))}
+                </Form.Select>
               </Col>
             </Row>
             <Row>
