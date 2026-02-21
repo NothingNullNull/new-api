@@ -257,6 +257,53 @@ const LoginForm = () => {
     }
   }
 
+  async function handleLDAPSubmit(e) {
+    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) {
+      showInfo(t('请先阅读并同意用户协议和隐私政策'));
+      return;
+    }
+    if (turnstileEnabled && turnstileToken === '') {
+      showInfo('请稍后几秒重试，Turnstile 正在检查用户环境！');
+      return;
+    }
+    setSubmitted(true);
+    setLoginLoading(true);
+    try {
+      if (username && password) {
+        const res = await API.post(
+          `/api/user/login/ldap?turnstile=${turnstileToken}`,
+          {
+            username,
+            password,
+          },
+        );
+        const { success, message, data } = res.data;
+        if (success) {
+          // 检查是否需要2FA验证
+          if (data && data.require_2fa) {
+            setShowTwoFA(true);
+            setLoginLoading(false);
+            return;
+          }
+
+          userDispatch({ type: 'login', payload: data });
+          setUserData(data);
+          updateAPI();
+          showSuccess('登录成功！');
+          navigate('/console');
+        } else {
+          showError(message);
+        }
+      } else {
+        showError('请输入用户名和密码！');
+      }
+    } catch (error) {
+      showError('登录失败，请重试');
+    } finally {
+      setLoginLoading(false);
+    }
+  }
+
   // 添加Telegram登录处理函数
   const onTelegramLoginClicked = async (response) => {
     if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) {
@@ -608,6 +655,19 @@ const LoginForm = () => {
                     </Button>
                   ))}
 
+                {status.ldap_enabled && (
+                  <Button
+                    theme='outline'
+                    className='w-full h-12 flex items-center justify-center !rounded-full border border-gray-200 hover:bg-gray-50 transition-colors'
+                    type='tertiary'
+                    icon={<IconLock size='large' />}
+                    onClick={handleLDAPSubmit}
+                    loading={loginLoading}
+                  >
+                    <span className='ml-3'>{t('使用 LDAP 登录')}</span>
+                  </Button>
+                )}
+
                 {status.telegram_oauth && (
                   <div className='flex justify-center my-2'>
                     <TelegramLoginButton
@@ -822,6 +882,7 @@ const LoginForm = () => {
                 status.oidc_enabled ||
                 status.wechat_login ||
                 status.linuxdo_oauth ||
+                status.ldap_enabled ||
                 status.telegram_oauth) && (
                 <>
                   <Divider margin='12px' align='center'>
@@ -958,6 +1019,7 @@ const LoginForm = () => {
           status.oidc_enabled ||
           status.wechat_login ||
           status.linuxdo_oauth ||
+          status.ldap_enabled ||
           status.telegram_oauth
         )
           ? renderEmailLoginForm()
