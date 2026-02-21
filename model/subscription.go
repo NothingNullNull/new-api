@@ -1206,9 +1206,10 @@ func GetUserSubscriptionQuota(userId int) (int64, error) {
 		return 0, err
 	}
 	
-	var totalRemaining int64 = 0
+	var totalRemaining int64
 	for _, sub := range subs {
 		remaining := sub.AmountTotal - sub.AmountUsed
+		// Only count positive remaining balance; ignore over-consumed subscriptions
 		if remaining > 0 {
 			totalRemaining += remaining
 		}
