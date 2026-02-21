@@ -94,8 +94,9 @@ export default function SettingsCreditLimit(props) {
     const fetchSubscriptionPlans = async () => {
       try {
         const res = await API.get('/api/subscription/admin/plans');
-        if (res.success) {
-          setSubscriptionPlans(res.data || []);
+        const { success, data } = res.data;
+        if (success) {
+          setSubscriptionPlans(data || []);
         } else {
           showError(t('获取订阅套餐列表失败'));
         }
