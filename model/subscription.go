@@ -1190,3 +1190,29 @@ func PostConsumeUserSubscriptionDelta(userSubscriptionId int, delta int64) error
 		return tx.Save(&sub).Error
 	})
 }
+
+// GetUserSubscriptionQuota calculates the total remaining quota from all active subscriptions for a user.
+// Returns the sum of (AmountTotal - AmountUsed) for all active subscriptions.
+func GetUserSubscriptionQuota(userId int) (int64, error) {
+	if userId <= 0 {
+		return 0, errors.New("invalid userId")
+	}
+	now := common.GetTimestamp()
+	var subs []UserSubscription
+	err := DB.Where("user_id = ? AND status = ? AND end_time > ?", userId, "active", now).
+		Select("amount_total, amount_used").
+		Find(&subs).Error
+	if err != nil {
+		return 0, err
+	}
+	
+	var totalRemaining int64 = 0
+	for _, sub := range subs {
+		remaining := sub.AmountTotal - sub.AmountUsed
+		if remaining > 0 {
+			totalRemaining += remaining
+		}
+	}
+	
+	return totalRemaining, nil
+}

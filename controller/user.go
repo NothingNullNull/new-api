@@ -467,6 +467,14 @@ func GetSelf(c *gin.Context) {
 	// 获取用户设置并提取sidebar_modules
 	userSetting := user.GetSetting()
 
+	// 获取订阅余额
+	subscriptionQuota, err := model.GetUserSubscriptionQuota(id)
+	if err != nil {
+		// 如果获取订阅余额失败，记录日志但不影响整体响应
+		common.SysLog("failed to get user subscription quota: " + err.Error())
+		subscriptionQuota = 0
+	}
+
 	// 构建响应数据，包含用户信息和权限
 	responseData := map[string]interface{}{
 		"id":                user.Id,
@@ -482,6 +490,7 @@ func GetSelf(c *gin.Context) {
 		"telegram_id":       user.TelegramId,
 		"group":             user.Group,
 		"quota":             user.Quota,
+		"subscription_quota": int(subscriptionQuota),
 		"used_quota":        user.UsedQuota,
 		"request_count":     user.RequestCount,
 		"aff_code":          user.AffCode,
