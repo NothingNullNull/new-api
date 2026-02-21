@@ -100,6 +100,13 @@ var TurnstileSecretKey = ""
 var TelegramBotToken = ""
 var TelegramBotName = ""
 
+var LDAPEnabled = false
+var LDAPServerURL = ""
+var LDAPBindDN = ""
+var LDAPBindPassword = ""
+var LDAPBaseDN = ""
+var LDAPUserFilter = "(uid=%s)"
+
 var QuotaForNewUser = 0
 var QuotaForInviter = 0
 var QuotaForInvitee = 0

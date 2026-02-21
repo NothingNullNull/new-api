@@ -591,6 +591,14 @@ func (user *User) FillUserByEmail() error {
 	return nil
 }
 
+func (user *User) FillUserByUsername() error {
+	if user.Username == "" {
+		return errors.New("username 为空！")
+	}
+	err := DB.Where("username = ?", user.Username).First(user).Error
+	return err
+}
+
 func (user *User) FillUserByGitHubId() error {
 	if user.GitHubId == "" {
 		return errors.New("GitHub id 为空！")

@@ -84,6 +84,91 @@ func Login(c *gin.Context) {
 	setupLogin(&user, c)
 }
 
+func LDAPLogin(c *gin.Context) {
+	if !common.LDAPEnabled {
+		common.ApiErrorI18n(c, i18n.MsgUserLDAPLoginDisabled)
+		return
+	}
+	var loginRequest LoginRequest
+	err := json.NewDecoder(c.Request.Body).Decode(&loginRequest)
+	if err != nil {
+		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+		return
+	}
+	username := loginRequest.Username
+	password := loginRequest.Password
+	if username == "" || password == "" {
+		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+		return
+	}
+
+	// Authenticate against LDAP
+	authenticated, err := service.LDAPAuth(username, password)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	if !authenticated {
+		c.JSON(http.StatusOK, gin.H{
+			"message": i18n.T(c, i18n.MsgUserLDAPAuthFailed),
+			"success": false,
+		})
+		return
+	}
+
+	// Find or create user
+	user := model.User{Username: username}
+	err = user.FillUserByUsername()
+	if err != nil {
+		// User doesn't exist, create if registration is enabled
+		if !common.RegisterEnabled {
+			common.ApiErrorI18n(c, i18n.MsgUserRegisterDisabled)
+			return
+		}
+		
+		user.Username = username
+		user.DisplayName = username
+		user.Role = common.RoleCommonUser
+		user.Status = common.UserStatusEnabled
+		
+		err = user.Insert(0)
+		if err != nil {
+			common.ApiError(c, err)
+			return
+		}
+	}
+
+	// Check user status
+	if user.Status != common.UserStatusEnabled {
+		common.ApiErrorI18n(c, i18n.MsgOAuthUserBanned)
+		return
+	}
+
+	// 检查是否启用2FA
+	if model.IsTwoFAEnabled(user.Id) {
+		// 设置pending session，等待2FA验证
+		session := sessions.Default(c)
+		session.Set("pending_username", user.Username)
+		session.Set("pending_user_id", user.Id)
+		err := session.Save()
+		if err != nil {
+			common.ApiErrorI18n(c, i18n.MsgUserSessionSaveFailed)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": i18n.T(c, i18n.MsgUserRequire2FA),
+			"success": true,
+			"data": map[string]interface{}{
+				"require_2fa": true,
+			},
+		})
+		return
+	}
+
+	setupLogin(&user, c)
+}
+
 // setup session & cookies and then return user info
 func setupLogin(user *model.User, c *gin.Context) {
 	session := sessions.Default(c)
