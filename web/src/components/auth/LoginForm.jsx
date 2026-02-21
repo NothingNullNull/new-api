@@ -525,6 +525,7 @@ const LoginForm = () => {
   const handleOtherLoginOptionsClick = () => {
     setOtherLoginOptionsLoading(true);
     setShowEmailLogin(false);
+    setLoginMode('password'); // Reset to password mode
     setOtherLoginOptionsLoading(false);
   };
 
