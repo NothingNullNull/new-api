@@ -29,6 +29,7 @@ import {
   showSuccess,
   updateAPI,
   getSystemName,
+  getOAuthProviderIcon,
   setUserData,
   onGitHubOAuthClicked,
   onDiscordOAuthClicked,
@@ -131,6 +132,18 @@ const LoginForm = () => {
       return {};
     }
   }, [statusState?.status]);
+  const hasCustomOAuthProviders =
+    (status.custom_oauth_providers || []).length > 0;
+  const hasOAuthLoginOptions = Boolean(
+    status.github_oauth ||
+      status.discord_oauth ||
+      status.oidc_enabled ||
+      status.wechat_login ||
+      status.linuxdo_oauth ||
+      status.ldap_enabled ||
+      status.telegram_oauth ||
+      hasCustomOAuthProviders,
+  );
 
   useEffect(() => {
     if (status?.turnstile_check) {
@@ -654,7 +667,7 @@ const LoginForm = () => {
                       theme='outline'
                       className='w-full h-12 flex items-center justify-center !rounded-full border border-gray-200 hover:bg-gray-50 transition-colors'
                       type='tertiary'
-                      icon={<IconLock size='large' />}
+                      icon={getOAuthProviderIcon(provider.icon || '', 20)}
                       onClick={() => handleCustomOAuthClick(provider)}
                       loading={customOAuthLoading[provider.slug]}
                     >
@@ -885,13 +898,7 @@ const LoginForm = () => {
                 </div>
               </Form>
 
-              {(status.github_oauth ||
-                status.discord_oauth ||
-                status.oidc_enabled ||
-                status.wechat_login ||
-                status.linuxdo_oauth ||
-                status.ldap_enabled ||
-                status.telegram_oauth) && (
+              {hasOAuthLoginOptions && (
                 <>
                   <Divider margin='12px' align='center'>
                     {t('或')}
@@ -1021,15 +1028,7 @@ const LoginForm = () => {
       />
       <div className='w-full max-w-sm mt-[60px]'>
         {showEmailLogin ||
-        !(
-          status.github_oauth ||
-          status.discord_oauth ||
-          status.oidc_enabled ||
-          status.wechat_login ||
-          status.linuxdo_oauth ||
-          status.ldap_enabled ||
-          status.telegram_oauth
-        )
+        !hasOAuthLoginOptions
           ? renderEmailLoginForm()
           : renderOAuthOptions()}
         {renderWeChatLoginModal()}
