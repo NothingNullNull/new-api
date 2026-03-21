@@ -617,6 +617,15 @@ func (user *User) FillUserById() error {
 	return nil
 }
 
+func (user *User) FillUserByUsername() error {
+	username := strings.TrimSpace(user.Username)
+	if username == "" {
+		return errors.New("username 为空！")
+	}
+	user.Username = username
+	return DB.Where(User{Username: user.Username}).First(user).Error
+}
+
 func (user *User) FillUserByEmail() error {
 	if user.Email == "" {
 		return errors.New("email 为空！")

@@ -97,6 +97,7 @@ const LoginForm = () => {
   const [linuxdoLoading, setLinuxdoLoading] = useState(false);
   const [emailLoginLoading, setEmailLoginLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
+  const [ldapLoginLoading, setLdapLoginLoading] = useState(false);
   const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
   const [otherLoginOptionsLoading, setOtherLoginOptionsLoading] =
     useState(false);
@@ -266,6 +267,52 @@ const LoginForm = () => {
       showError('登录失败，请重试');
     } finally {
       setLoginLoading(false);
+    }
+  }
+
+  async function handleLdapSubmit() {
+    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) {
+      showInfo(t('请先阅读并同意用户协议和隐私政策'));
+      return;
+    }
+    if (turnstileEnabled && turnstileToken === '') {
+      showInfo('请稍后几秒重试，Turnstile 正在检查用户环境！');
+      return;
+    }
+    setSubmitted(true);
+    setLdapLoginLoading(true);
+    try {
+      if (username && password) {
+        const res = await API.post(
+          `/api/user/login/ldap?turnstile=${turnstileToken}`,
+          {
+            username,
+            password,
+          },
+        );
+        const { success, message, data } = res.data;
+        if (success) {
+          if (data && data.require_2fa) {
+            setShowTwoFA(true);
+            setLdapLoginLoading(false);
+            return;
+          }
+
+          userDispatch({ type: 'login', payload: data });
+          setUserData(data);
+          updateAPI();
+          showSuccess('登录成功！');
+          navigate('/console');
+        } else {
+          showError(message);
+        }
+      } else {
+        showError('请输入用户名和密码！');
+      }
+    } catch (error) {
+      showError('LDAP 登录失败，请重试');
+    } finally {
+      setLdapLoginLoading(false);
     }
   }
 
@@ -816,6 +863,21 @@ const LoginForm = () => {
                   >
                     {t('继续')}
                   </Button>
+
+                  {status.ldap_enabled && (
+                    <Button
+                      theme='outline'
+                      className='w-full !rounded-full'
+                      type='tertiary'
+                      onClick={handleLdapSubmit}
+                      loading={ldapLoginLoading}
+                      disabled={
+                        (hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms
+                      }
+                    >
+                      {t('使用 LDAP 登录')}
+                    </Button>
+                  )}
 
                   <Button
                     theme='borderless'
