@@ -50,7 +50,7 @@ export const useDashboardStats = (
         items: [
           {
             title: t('当前余额'),
-            value: renderQuota((userState?.user?.quota || 0) + (userState?.user?.subscription_quota || 0)),
+            value: renderQuota(userState?.user?.quota),
             icon: <IconMoneyExchangeStroked />,
             avatarColor: 'blue',
             trendData: [],
@@ -135,7 +135,6 @@ export const useDashboardStats = (
     ],
     [
       userState?.user?.quota,
-      userState?.user?.subscription_quota,
       userState?.user?.used_quota,
       userState?.user?.request_count,
       times,

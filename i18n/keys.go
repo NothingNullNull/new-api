@@ -61,8 +61,6 @@ const (
 // User related messages
 const (
 	MsgUserPasswordLoginDisabled     = "user.password_login_disabled"
-	MsgUserLDAPLoginDisabled         = "user.ldap_login_disabled"
-	MsgUserLDAPAuthFailed            = "user.ldap_auth_failed"
 	MsgUserRegisterDisabled          = "user.register_disabled"
 	MsgUserPasswordRegisterDisabled  = "user.password_register_disabled"
 	MsgUserUsernameOrPasswordEmpty   = "user.username_or_password_empty"
@@ -70,6 +68,8 @@ const (
 	MsgUserEmailOrPasswordEmpty      = "user.email_or_password_empty"
 	MsgUserExists                    = "user.exists"
 	MsgUserNotExists                 = "user.not_exists"
+	MsgUserLDAPLoginDisabled         = "user.ldap_login_disabled"
+	MsgUserLDAPAuthFailed            = "user.ldap_auth_failed"
 	MsgUserDisabled                  = "user.disabled"
 	MsgUserSessionSaveFailed         = "user.session_save_failed"
 	MsgUserRequire2FA                = "user.require_2fa"

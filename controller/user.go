@@ -90,7 +90,7 @@ func LDAPLogin(c *gin.Context) {
 		return
 	}
 	var loginRequest LoginRequest
-	err := json.NewDecoder(c.Request.Body).Decode(&loginRequest)
+	err := common.DecodeJson(c.Request.Body, &loginRequest)
 	if err != nil {
 		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
 		return
@@ -100,11 +100,6 @@ func LDAPLogin(c *gin.Context) {
 	if username == "" || password == "" {
 		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
 		return
-	}
-
-	// Strip email domain from username if present
-	if strings.Contains(username, "@") {
-		username = strings.Split(username, "@")[0]
 	}
 
 	// Authenticate against LDAP
@@ -125,12 +120,17 @@ func LDAPLogin(c *gin.Context) {
 	user := model.User{Username: username}
 	err = user.FillUserByUsername()
 	if err != nil {
-		// User doesn't exist, create new user (LDAP users bypass registration check)
+		// User doesn't exist, create if registration is enabled
+		if !common.RegisterEnabled {
+			common.ApiErrorI18n(c, i18n.MsgUserRegisterDisabled)
+			return
+		}
+
 		user.Username = username
 		user.DisplayName = username
 		user.Role = common.RoleCommonUser
 		user.Status = common.UserStatusEnabled
-		
+
 		err = user.Insert(0)
 		if err != nil {
 			common.ApiError(c, err)
@@ -144,9 +144,8 @@ func LDAPLogin(c *gin.Context) {
 		return
 	}
 
-	// 检查是否启用2FA
+	// Check if 2FA is enabled
 	if model.IsTwoFAEnabled(user.Id) {
-		// 设置pending session，等待2FA验证
 		session := sessions.Default(c)
 		session.Set("pending_username", user.Username)
 		session.Set("pending_user_id", user.Id)
@@ -467,14 +466,6 @@ func GetSelf(c *gin.Context) {
 	// 获取用户设置并提取sidebar_modules
 	userSetting := user.GetSetting()
 
-	// 获取订阅余额
-	subscriptionQuota, err := model.GetUserSubscriptionQuota(id)
-	if err != nil {
-		// 如果获取订阅余额失败，记录日志但不影响整体响应
-		common.SysLog("failed to get user subscription quota: " + err.Error())
-		subscriptionQuota = 0
-	}
-
 	// 构建响应数据，包含用户信息和权限
 	responseData := map[string]interface{}{
 		"id":                user.Id,
@@ -490,7 +481,6 @@ func GetSelf(c *gin.Context) {
 		"telegram_id":       user.TelegramId,
 		"group":             user.Group,
 		"quota":             user.Quota,
-		"subscription_quota": int(subscriptionQuota),
 		"used_quota":        user.UsedQuota,
 		"request_count":     user.RequestCount,
 		"aff_code":          user.AffCode,
