@@ -112,7 +112,6 @@ const LoginForm = () => {
   const githubTimeoutRef = useRef(null);
   const githubButtonText = t(githubButtonTextKeyByState[githubButtonState]);
   const [customOAuthLoading, setCustomOAuthLoading] = useState({});
-  const [loginMode, setLoginMode] = useState('password'); // 'password' or 'ldap'
 
   const logo = getLogo();
   const systemName = getSystemName();
@@ -140,7 +139,6 @@ const LoginForm = () => {
       status.oidc_enabled ||
       status.wechat_login ||
       status.linuxdo_oauth ||
-      status.ldap_enabled ||
       status.telegram_oauth ||
       hasCustomOAuthProviders,
   );
@@ -266,53 +264,6 @@ const LoginForm = () => {
       }
     } catch (error) {
       showError('登录失败，请重试');
-    } finally {
-      setLoginLoading(false);
-    }
-  }
-
-  async function handleLDAPSubmit(e) {
-    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) {
-      showInfo(t('请先阅读并同意用户协议和隐私政策'));
-      return;
-    }
-    if (turnstileEnabled && turnstileToken === '') {
-      showInfo(t('请稍后几秒重试，Turnstile 正在检查用户环境！'));
-      return;
-    }
-    setSubmitted(true);
-    setLoginLoading(true);
-    try {
-      if (username && password) {
-        const res = await API.post(
-          `/api/user/login/ldap?turnstile=${turnstileToken}`,
-          {
-            username,
-            password,
-          },
-        );
-        const { success, message, data } = res.data;
-        if (success) {
-          // 检查是否需要2FA验证
-          if (data && data.require_2fa) {
-            setShowTwoFA(true);
-            setLoginLoading(false);
-            return;
-          }
-
-          userDispatch({ type: 'login', payload: data });
-          setUserData(data);
-          updateAPI();
-          showSuccess(t('登录成功！'));
-          navigate('/console');
-        } else {
-          showError(message);
-        }
-      } else {
-        showError(t('请输入用户名和密码！'));
-      }
-    } catch (error) {
-      showError(t('登录失败，请重试'));
     } finally {
       setLoginLoading(false);
     }
@@ -457,14 +408,7 @@ const LoginForm = () => {
   const handleEmailLoginClick = () => {
     setEmailLoginLoading(true);
     setShowEmailLogin(true);
-    setLoginMode('password'); // Set to password mode
     setEmailLoginLoading(false);
-  };
-
-  // Handle LDAP login option click - show email form in LDAP mode
-  const handleLDAPLoginClick = () => {
-    setShowEmailLogin(true);
-    setLoginMode('ldap'); // Set to LDAP mode
   };
 
   const handlePasskeyLogin = async () => {
@@ -538,7 +482,6 @@ const LoginForm = () => {
   const handleOtherLoginOptionsClick = () => {
     setOtherLoginOptionsLoading(true);
     setShowEmailLogin(false);
-    setLoginMode('password'); // Reset to password mode
     setOtherLoginOptionsLoading(false);
   };
 
@@ -677,18 +620,6 @@ const LoginForm = () => {
                     </Button>
                   ))}
 
-                {status.ldap_enabled && (
-                  <Button
-                    theme='outline'
-                    className='w-full h-12 flex items-center justify-center !rounded-full border border-gray-200 hover:bg-gray-50 transition-colors'
-                    type='tertiary'
-                    icon={<IconLock size='large' />}
-                    onClick={handleLDAPLoginClick}
-                  >
-                    <span className='ml-3'>{t('使用 LDAP 登录')}</span>
-                  </Button>
-                )}
-
                 {status.telegram_oauth && (
                   <div className='flex justify-center my-2'>
                     <TelegramLoginButton
@@ -797,7 +728,7 @@ const LoginForm = () => {
           <Card className='border-0 !rounded-2xl overflow-hidden'>
             <div className='flex justify-center pt-6 pb-2'>
               <Title heading={3} className='text-gray-800 dark:text-gray-200'>
-                {loginMode === 'ldap' ? t('LDAP 登录') : t('登 录')}
+                {t('登 录')}
               </Title>
             </div>
             <div className='px-2 py-8'>
@@ -877,13 +808,13 @@ const LoginForm = () => {
                     className='w-full !rounded-full'
                     type='primary'
                     htmlType='submit'
-                    onClick={loginMode === 'ldap' ? handleLDAPSubmit : handleSubmit}
+                    onClick={handleSubmit}
                     loading={loginLoading}
                     disabled={
                       (hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms
                     }
                   >
-                    {loginMode === 'ldap' ? t('LDAP 登录') : t('继续')}
+                    {t('继续')}
                   </Button>
 
                   <Button

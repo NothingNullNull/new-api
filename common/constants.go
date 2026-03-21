@@ -100,17 +100,9 @@ var TurnstileSecretKey = ""
 var TelegramBotToken = ""
 var TelegramBotName = ""
 
-var LDAPEnabled = false
-var LDAPServerURL = ""
-var LDAPBindDN = ""
-var LDAPBindPassword = ""
-var LDAPBaseDN = ""
-var LDAPUserFilter = "(uid=%s)"
-
 var QuotaForNewUser = 0
 var QuotaForInviter = 0
 var QuotaForInvitee = 0
-var AutoActivateSubscriptionPlanId = 0
 var ChannelDisableThreshold = 5.0
 var AutomaticDisableChannelEnabled = false
 var AutomaticEnableChannelEnabled = false
@@ -185,6 +177,7 @@ var (
 	DownloadRateLimitDuration int64 = 60
 
 	// Per-user search rate limit (applies after authentication, keyed by user ID)
+	SearchRateLimitEnable         = true
 	SearchRateLimitNum            = 10
 	SearchRateLimitDuration int64 = 60
 )
@@ -219,5 +212,6 @@ const (
 const (
 	TopUpStatusPending = "pending"
 	TopUpStatusSuccess = "success"
+	TopUpStatusFailed  = "failed"
 	TopUpStatusExpired = "expired"
 )
