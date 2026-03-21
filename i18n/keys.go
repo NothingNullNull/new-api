@@ -68,6 +68,8 @@ const (
 	MsgUserEmailOrPasswordEmpty      = "user.email_or_password_empty"
 	MsgUserExists                    = "user.exists"
 	MsgUserNotExists                 = "user.not_exists"
+	MsgUserLDAPLoginDisabled         = "user.ldap_login_disabled"
+	MsgUserLDAPAuthFailed            = "user.ldap_auth_failed"
 	MsgUserDisabled                  = "user.disabled"
 	MsgUserSessionSaveFailed         = "user.session_save_failed"
 	MsgUserRequire2FA                = "user.require_2fa"
