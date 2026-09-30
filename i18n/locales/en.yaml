@@ -1,8 +1,11 @@
 # English translations
 
+# Task plugin messages
+task_plugin.unknown_meta_field: 'Plugin metadata contains an unknown field "{{.Field}}". If this plugin was downloaded from the official marketplace, it may require a newer version of new-api. Try updating new-api and installing the plugin again.'
+
 # Common messages
 common.invalid_params: "Invalid parameters"
-common.database_error: "Database error, please try again later"
+common.database_error: "Database error, please contact the administrator"
 common.retry_later: "Please try again later"
 common.generate_failed: "Generation failed"
 common.not_found: "Not found"
@@ -21,6 +24,17 @@ common.delete_success: "Deletion successful"
 common.delete_failed: "Deletion failed"
 common.already_exists: "Already exists"
 common.name_cannot_be_empty: "Name cannot be empty"
+common.batch_too_many: "Too many items in batch request, maximum is {{.Max}}"
+
+# Auth middleware messages
+auth.not_logged_in: "Unauthorized, not logged in and no access token provided"
+auth.access_token_invalid: "Unauthorized, invalid access token"
+auth.user_info_invalid: "Unauthorized, invalid user info"
+auth.user_id_not_provided: "Unauthorized, New-Api-User header not provided"
+auth.user_id_format_error: "Unauthorized, New-Api-User header format error"
+auth.user_id_mismatch: "Unauthorized, New-Api-User does not match logged in user"
+auth.user_banned: "User has been banned"
+auth.insufficient_privilege: "Unauthorized, insufficient privileges"
 
 # Token messages
 token.name_too_long: "Token name is too long"
@@ -36,6 +50,9 @@ token.expired: "This token has expired"
 token.exhausted: "This token quota is exhausted TokenStatusExhausted[sk-{{.Prefix}}***{{.Suffix}}]"
 token.status_unavailable: "This token status is unavailable"
 token.db_error: "Invalid token, database query error, please contact administrator"
+token.auto_groups_too_many: "A token can select at most {{.Max}} Auto groups"
+token.auto_groups_duplicate: "Auto group {{.Group}} is duplicated"
+token.auto_groups_invalid: "Auto group {{.Group}} is unavailable or unauthorized"
 
 # Redemption messages
 redemption.name_length: "Redemption code name length must be between 1-20"
@@ -65,6 +82,9 @@ user.ldap_auth_failed: "LDAP authentication failed, please check your username a
 user.require_2fa: "Please enter two-factor authentication code"
 user.email_verification_required: "Email verification is enabled, please enter email address and verification code"
 user.verification_code_error: "Verification code is incorrect or has expired"
+user.email_already_taken: "Email address is already in use"
+user.password_unset: "This account has no password set. Please use password reset or contact an administrator to reset it."
+user.password_reset_link_invalid: "Password reset link is invalid or has expired"
 user.input_invalid: "Invalid input {{.Error}}"
 user.no_permission_same_level: "No permission to access users of same or higher level"
 user.no_permission_higher_level: "No permission to update users of same or higher permission level"
@@ -92,6 +112,7 @@ user.wechat_id_empty: "WeChat ID is empty!"
 user.telegram_id_empty: "Telegram ID is empty!"
 user.telegram_not_bound: "This Telegram account is not bound"
 user.linux_do_id_empty: "Linux DO ID is empty!"
+user.quota_change_zero: "Quota change amount cannot be zero"
 
 # Quota messages
 quota.negative: "Quota cannot be negative!"
@@ -124,6 +145,7 @@ payment.stripe_not_configured: "Stripe is not configured or key is invalid"
 payment.webhook_not_configured: "Webhook is not configured"
 payment.price_id_not_configured: "StripePriceId is not configured for this plan"
 payment.creem_not_configured: "CreemProductId is not configured for this plan"
+payment.compliance_required: "Payment, redemption, subscription, and invitation reward features are disabled. The administrator must confirm compliance terms before enabling them."
 
 # Topup messages
 topup.not_provided: "Payment order number not provided"
@@ -175,6 +197,9 @@ passkey.login_abnormal: "Passkey login status is abnormal"
 passkey.update_failed: "Passkey credential update failed"
 passkey.invalid_user_id: "Invalid user ID"
 passkey.verify_failed: "Passkey verification failed, please try again or contact administrator"
+passkey.rp_id_invalid: "Invalid Passkey domain. Enter a domain without a scheme, port, path or wildcard."
+passkey.rp_id_unavailable: "This Passkey domain is not available on this website. Use its original website or another verification method."
+passkey.rp_id_removal_confirmation: "Review the affected Passkeys and confirm the domain removal. If the settings or impact have changed, confirmation is required again."
 
 # 2FA messages
 twofa.not_enabled: "User has not enabled 2FA"
@@ -232,6 +257,7 @@ oauth.user_deleted: "User has been deleted"
 oauth.user_banned: "User has been banned"
 oauth.bind_success: "Binding successful"
 oauth.already_bound: "This {{.Provider}} account has already been bound"
+oauth.not_auto_linked: "This {{.Provider}} account cannot be linked to an existing account automatically, please sign in or register another way and then link {{.Provider}} in account settings"
 oauth.connect_failed: "Unable to connect to {{.Provider}} server, please try again later"
 oauth.token_failed: "Failed to get token from {{.Provider}}, please check settings"
 oauth.user_info_empty: "{{.Provider}} returned empty user info, please check settings"
@@ -247,6 +273,7 @@ common.invalid_input: "Invalid input"
 distributor.invalid_request: "Invalid request: {{.Error}}"
 distributor.invalid_channel_id: "Invalid channel ID"
 distributor.channel_disabled: "This channel has been disabled"
+distributor.affinity_channel_disabled: "The channel selected by channel affinity has been disabled, and retry was stopped by rule. Please contact the administrator"
 distributor.token_no_model_access: "This token has no access to any models"
 distributor.token_model_forbidden: "This token has no access to model {{.Model}}"
 distributor.model_name_required: "Model name not specified, model name cannot be empty"
@@ -254,6 +281,7 @@ distributor.invalid_playground_request: "Invalid playground request: {{.Error}}"
 distributor.group_access_denied: "No permission to access this group"
 distributor.get_channel_failed: "Failed to get available channel for model {{.Model}} under group {{.Group}} (distributor): {{.Error}}"
 distributor.no_available_channel: "No available channel for model {{.Model}} under group {{.Group}} (distributor)"
+distributor.no_available_channel_task_plugin: "No available channel for model {{.Model}} under group {{.Group}}: the model is claimed by a task plugin, which has no enabled channel serving it (distributor)"
 distributor.invalid_midjourney_request: "Invalid Midjourney request: {{.Error}}"
 distributor.invalid_request_parse_model: "Invalid request, unable to parse model"
 
