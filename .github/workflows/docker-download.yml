@@ -1,0 +1,86 @@
+name: Download LDAP Docker image
+
+on:
+  push:
+    branches:
+      - codex/docker-download-ebfe7b221
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout merged source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ebfe7b221776a4cff49473574771bcf9e3d79bda
+          persist-credentials: false
+
+      - name: Build linux/amd64 image
+        run: |
+          set -euo pipefail
+          printf 'ldap-ebfe7b221\n' > VERSION
+          docker build --platform linux/amd64 \
+            --label org.opencontainers.image.revision=ebfe7b221776a4cff49473574771bcf9e3d79bda \
+            --label org.opencontainers.image.source=https://github.com/NothingNullNull/new-api \
+            --label org.opencontainers.image.version=ldap-ebfe7b221 \
+            --tag new-api:ldap-ebfe7b221 .
+
+      - name: Check container startup
+        run: |
+          set -euo pipefail
+          docker run --detach --name image-smoke \
+            --publish 127.0.0.1:13002:3000 \
+            --env SESSION_SECRET=artifact-smoke-test-only-session-secret \
+            new-api:ldap-ebfe7b221
+          trap 'docker logs image-smoke; docker rm -f image-smoke' EXIT
+          ready=false
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:13002/api/status > status.json; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          test "$ready" = true
+          python3 - <<'PYTHON'
+          import json
+          with open('status.json') as source:
+              status = json.load(source)
+          assert status['success'] is True
+          assert status['data']['version'] == 'ldap-ebfe7b221'
+          assert status['data']['ldap_enabled'] is False
+          PYTHON
+          curl --fail --silent http://127.0.0.1:13002/api/setup > setup.json
+          curl --fail --silent http://127.0.0.1:13002/ > index.html
+          python3 - <<'PYTHON'
+          import json
+          with open('setup.json') as source:
+              assert json.load(source)['success'] is True
+          with open('index.html') as source:
+              assert 'id="root"' in source.read()
+          PYTHON
+
+      - name: Export image and checksum
+        env:
+          IMAGE_DIR: ${{ runner.temp }}/image-download
+        run: |
+          set -euo pipefail
+          mkdir -p "$IMAGE_DIR"
+          cd "$IMAGE_DIR"
+          docker save new-api:ldap-ebfe7b221 | gzip -1 > new-api-ldap-ebfe7b221-linux-amd64.tar.gz
+          sha256sum new-api-ldap-ebfe7b221-linux-amd64.tar.gz > new-api-ldap-ebfe7b221-linux-amd64.tar.gz.sha256
+          gzip -t new-api-ldap-ebfe7b221-linux-amd64.tar.gz
+          printf '%s\n' 'Import: docker load -i new-api-ldap-ebfe7b221-linux-amd64.tar.gz' > README.txt
+
+      - name: Upload downloadable image
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: new-api-ldap-ebfe7b221-linux-amd64
+          path: ${{ runner.temp }}/image-download/*
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
